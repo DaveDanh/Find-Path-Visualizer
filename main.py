@@ -34,7 +34,7 @@ buttonlist[-1][2] = green
 already = 0
 
 def reset():
-    global buttonlist, walls, startpoint, endpoint, starthover, endhover, already,w
+    global buttonlist, walls, startpoint, endpoint, starthover, endhover, already, w
     buttonlist = []
     w = 400 // size
     for i in range(50,450,w):
@@ -274,3 +274,4 @@ while running:
     pygame.display.flip()
 
 pygame.quit()
+
