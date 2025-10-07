@@ -2,7 +2,7 @@ import pygame
 
 pygame.init()
 
-screen = pygame.display.set_mode((500, 550))
+screen = pygame.display.set_mode((500, 600))
 pygame.display.set_caption("Path Finder Visualizer")
 
 white = (255, 255, 255)
@@ -15,7 +15,8 @@ green = (0, 255, 0)
 yellow = (255, 255, 100)
 pink = (255,192,203)
 
-size =40
+myfont = pygame.font.Font(None,50)
+size = 10
 walls = []
 startpoint = [0,0]
 endpoint = [size-1,size-1]
@@ -23,7 +24,6 @@ starthover = False
 endhover = False
 w = 400 // size
 
-cache = []
 buttonlist = []
 for i in range(50,450,w):
         for j in range(30,430,w):
@@ -34,8 +34,9 @@ buttonlist[-1][2] = green
 already = 0
 
 def reset():
-    global buttonlist, walls, startpoint, endpoint, starthover, endhover, already
+    global buttonlist, walls, startpoint, endpoint, starthover, endhover, already,w
     buttonlist = []
+    w = 400 // size
     for i in range(50,450,w):
         for j in range(30,430,w):
             buttonlist.append([i,j,grey])
@@ -53,23 +54,35 @@ def drawbuttons():
     for [x,y,color] in buttonlist:
         pygame.draw.rect(screen, color, (x, y, w, w))
     
-    buttonrestart = pygame.Rect((75, 460 , 60, 60))
+    buttonrestart = pygame.Rect((150, 460 , 60, 60))
     restart = pygame.image.load('Python/FindPathVisualizer/restart.png')
     restart = pygame.transform.scale(restart, (60, 60))
-    restartrect = restart.get_rect(center = buttonrestart.center)
+    restartrect = restart.get_rect(center = buttonrestart.center)   
     screen.blit(restart, restartrect)
 
     buttonstart = pygame.Rect((225, 460 , 60, 60))
-    start = pygame.image.load('Python/FindPathVisualizer/start.jpg')
+    start = pygame.image.load('Python/FindPathVisualizer/start.png')
     start = pygame.transform.scale(start, (60, 60))
     startrect = start.get_rect(center = buttonstart.center)
     screen.blit(start, startrect)
 
-    buttonreset = pygame.Rect((375, 460 , 60, 60))
+    buttonreset = pygame.Rect((75, 460 , 60, 60))
     reset = pygame.image.load('Python/FindPathVisualizer/reset.png')
     reset = pygame.transform.scale(reset, (60, 60))
     resetrect = reset.get_rect(center = buttonreset.center)
     screen.blit(reset, resetrect)
+
+    buttonup = pygame.Rect((300, 460 , 60, 60))
+    up = pygame.image.load('Python/FindPathVisualizer/up.png')
+    up = pygame.transform.scale(up, (60, 60))
+    uprect = up.get_rect(center = buttonup.center)   
+    screen.blit(up, uprect)
+
+    buttondown = pygame.Rect((375, 460 , 60, 60))
+    down = pygame.image.load('Python/FindPathVisualizer/down.png')
+    down = pygame.transform.scale(down, (60, 60))
+    downrect = down.get_rect(center = buttondown.center)   
+    screen.blit(down, downrect)
 
 def findpath(startpoint, endpoint, walls):
     spread = []
@@ -210,7 +223,6 @@ while running:
                         hover = (100, 255, 100)
                 pygame.draw.rect(screen, buttonlist[index][2], (x, y, w, w))
             elif 225<location[0]<285 and 460<location[1]<520 and already == 0:
-                cache = buttonlist.copy()
                 global results
                 spreadpattern,results = findpath(startpoint, endpoint, walls)
                 already = 1
@@ -224,7 +236,7 @@ while running:
                         pygame.time.wait(1)
                 for [i,j] in results:
                     buttonlist[j*size+i][2] = pink
-            elif 75<location[0]<135 and 460<location[1]<520 and already == 1:
+            elif 150<location[0]<210 and 460<location[1]<520 and already == 1:
                 for k in spreadpattern:
                     for [i,j] in k:
                         if [i,j] != endpoint:
@@ -233,8 +245,26 @@ while running:
                     buttonlist[j*size+i][2] = grey
                 already = 0
                 drawbuttons()
-            elif 375<location[0]<435 and 460<location[1]<520:
+            elif 75<location[0]<135 and 460<location[1]<520:
                 reset()
+            elif 300<location[0]<360 and 460<location[1]<520 and already == 0:
+                if size == 10:
+                    size = 20
+                    reset()
+                    pygame.display.flip()
+                elif size == 20:
+                    size = 40
+                    reset()
+                    pygame.display.flip()
+            elif 375<location[0]<435 and 460<location[1]<520 and already == 0:
+                if size == 40:
+                    size = 20
+                    reset()
+                    pygame.display.flip()
+                elif size == 20:
+                    size = 10
+                    reset()
+                    pygame.display.flip()
         pygame.display.flip()
     location = pygame.mouse.get_pos()
     if (49<location[0]<450) and (29<location[1]<430) and already == 0:
