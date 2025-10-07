@@ -18,4 +18,5 @@ Draw/Erase Walls: Left-click on any gray square to create a red wall. Click on a
 Move Start/End Nodes: Click on the blue (start) or green (end) node to "pick it up." Click again on an empty square to place it.
 Find the Path: Press the Play (▶) button to run the algorithm.
 Reset the Path: Press the Restart (↺) button to clear the yellow and pink path for another run.
-Start Over: Press the Reset (↩) button to clear the entire board.
+Start Over: Press the Reset (X) button to clear the entire board.
+Increase/Decrease the size of the maze: Press the button 🡩/🡫 to adjust the size, there are 3 sizes: 10x10, 20x20, and 40x40
