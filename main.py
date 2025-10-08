@@ -2,7 +2,9 @@ import pygame
 
 pygame.init()
 
-screen = pygame.display.set_mode((500, 600))
+widthscreen = 620
+heightscreen = widthscreen+200
+screen = pygame.display.set_mode((widthscreen, heightscreen))
 pygame.display.set_caption("Path Finder Visualizer")
 
 white = (255, 255, 255)
@@ -15,30 +17,38 @@ green = (0, 255, 0)
 yellow = (255, 255, 100)
 pink = (255,192,203)
 
-myfont = pygame.font.Font(None,50)
+gap = 60
+marginleft = 10
+margintop = 30
+tablesize = widthscreen-20
+myfont = pygame.font.Font(None,40)
 size = 10
 walls = []
 startpoint = [0,0]
 endpoint = [size-1,size-1]
 starthover = False
 endhover = False
-w = 400 // size
+w = tablesize // size
 
 buttonlist = []
-for i in range(50,450,w):
-        for j in range(30,430,w):
+for i in range(marginleft,tablesize+marginleft,w):
+        for j in range(margintop,tablesize+margintop,w):
             buttonlist.append([i,j,grey])
 buttonlist[0][2] = blue
 buttonlist[-1][2] = green
-
+text = ''
 already = 0
+appeartext = 0
 
 def reset():
+    global text,appeartext
+    appeartext = 0
+    text = ''
     global buttonlist, walls, startpoint, endpoint, starthover, endhover, already, w
     buttonlist = []
-    w = 400 // size
-    for i in range(50,450,w):
-        for j in range(30,430,w):
+    w = tablesize // size
+    for i in range(marginleft,tablesize,w):
+        for j in range(margintop,tablesize+margintop,w):
             buttonlist.append([i,j,grey])
     buttonlist[0][2] = blue
     buttonlist[-1][2] = green
@@ -51,38 +61,46 @@ def reset():
     drawbuttons()
 
 def drawbuttons():
+    global textbutton
     for [x,y,color] in buttonlist:
         pygame.draw.rect(screen, color, (x, y, w, w))
+        pygame.draw.rect(screen, black, (x, y, w, w),1)
     
-    buttonrestart = pygame.Rect((150, 460 , 60, 60))
+    buttonrestart = pygame.Rect((205, tablesize+gap , 60, 60))
     restart = pygame.image.load('Python/FindPathVisualizer/restart.png')
     restart = pygame.transform.scale(restart, (60, 60))
     restartrect = restart.get_rect(center = buttonrestart.center)   
     screen.blit(restart, restartrect)
 
-    buttonstart = pygame.Rect((225, 460 , 60, 60))
+    buttonstart = pygame.Rect((280, tablesize+gap , 60, 60))
     start = pygame.image.load('Python/FindPathVisualizer/start.png')
     start = pygame.transform.scale(start, (60, 60))
     startrect = start.get_rect(center = buttonstart.center)
     screen.blit(start, startrect)
 
-    buttonreset = pygame.Rect((75, 460 , 60, 60))
+    buttonreset = pygame.Rect((130, tablesize+gap , 60, 60))
     reset = pygame.image.load('Python/FindPathVisualizer/reset.png')
     reset = pygame.transform.scale(reset, (60, 60))
     resetrect = reset.get_rect(center = buttonreset.center)
     screen.blit(reset, resetrect)
 
-    buttonup = pygame.Rect((300, 460 , 60, 60))
+    buttonup = pygame.Rect((355, tablesize+gap , 60, 60))
     up = pygame.image.load('Python/FindPathVisualizer/up.png')
     up = pygame.transform.scale(up, (60, 60))
     uprect = up.get_rect(center = buttonup.center)   
     screen.blit(up, uprect)
 
-    buttondown = pygame.Rect((375, 460 , 60, 60))
+    buttondown = pygame.Rect((430, tablesize+gap , 60, 60))
     down = pygame.image.load('Python/FindPathVisualizer/down.png')
     down = pygame.transform.scale(down, (60, 60))
     downrect = down.get_rect(center = buttondown.center)   
     screen.blit(down, downrect)
+
+    if appeartext == 1:
+        textbutton = pygame.Rect(235,tablesize + 2.5*gap,150,40)
+        render = myfont.render(text,True,black)
+        textrect = render.get_rect(center = textbutton.center)
+        screen.blit(render,textrect)
 
 def findpath(startpoint, endpoint, walls):
     spread = []
@@ -138,21 +156,21 @@ def findpath(startpoint, endpoint, walls):
                     while prev != startpoint:
                         optimalpath.append(prev)
                         prev = path[prev[0]*size+prev[1]][0]
-                    print("It takes %s moves" %lis[endpoint[0]][endpoint[1]])
-                    return spread,optimalpath
+                    text = str(lis[endpoint[0]][endpoint[1]]) + ' moves'
+                    return spread,optimalpath,text
                 break
     optimalpath = []
     test = path[endpoint[0]*size+endpoint[1]]
     if test == []:
-        print("No Path Found")
-        return spread,[]
+        text = 'No path'
+        return spread,[],text
     else:
         prev = test[0]
         while prev != startpoint:
             optimalpath.append(prev)
             prev = path[prev[0]*size+prev[1]][0]
-        print("It takes %s moves" %lis[endpoint[0]][endpoint[1]])
-        return spread,optimalpath
+        text = str(lis[endpoint[0]][endpoint[1]]) + ' moves'
+        return spread,optimalpath,text
 running = True
 while running:
     screen.fill(white)
@@ -162,45 +180,45 @@ while running:
             running = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             location = pygame.mouse.get_pos()
-            if (49<location[0]<451) and (29<location[1]<431 and already == 0):
-                x = ((location[0]-50)//w)*w + 50
-                y = ((location[1]-30)//w)*w + 30
-                index = (y-30)//w + (x-50)//(w) * size
+            if (marginleft-1<location[0]<tablesize+marginleft) and (margintop-1<location[1]<tablesize+margintop and already == 0):
+                x = ((location[0]-marginleft)//w)*w + marginleft
+                y = ((location[1]-margintop)//w)*w + margintop
+                index = (y-margintop)//w + (x)//(w) * size
 
                 if buttonlist[index][2] == grey:
                     if starthover:
                         buttonlist[index][2] = blue
-                        startpoint = [(y-30)//w, (x-50)//w]
+                        startpoint = [(y-margintop)//w, (x)//w]
                         starthover = False
                         hover = (100,100,100)
                     elif endhover:
                         buttonlist[index][2] = green
-                        endpoint = [(y-30)//w, (x-50)//w]
+                        endpoint = [(y-margintop)//w, (x)//w]
                         endhover = False
                         hover = (100,100,100)
                     else:
                         buttonlist[index][2] = red
-                        walls.append([(y-30)//w,(x-50)//w])
+                        walls.append([(y-margintop)//w,(x)//w])
                 elif buttonlist[index][2] == red:
                     if starthover:
                         buttonlist[index][2] = blue
-                        startpoint = [(y-30)//w, (x-50)//w]
-                        walls.remove([(y-30)//w, (x-50)//w])
+                        startpoint = [(y-margintop)//w, (x)//w]
+                        walls.remove([(y-margintop)//w, (x)//w])
                         starthover = False
                         hover = (100,100,100)
                     elif endhover:
                         buttonlist[index][2] = green
-                        endpoint = [(y-30)//w, (x-50)//w]
-                        walls.remove([(y-30)//w,(x-50)//w])
+                        endpoint = [(y-margintop)//w, (x)//w]
+                        walls.remove([(y-margintop)//w,(x)//w])
                         endhover = False
                         hover = (100,100,100)
                     else:
                         buttonlist[index][2] = grey
-                        walls.remove([(y-30)//w,(x-50)//w])
+                        walls.remove([(y-margintop)//w,(x)//w])
                 elif buttonlist[index][2] == blue:
                     if endhover:
                         buttonlist[index][2] = green
-                        endpoint = [(y-30)//w, (x-50)//w]
+                        endpoint = [(y-margintop)//w, (x)//w]
                         endhover = False
                         starthover = True
                         hover = (100, 100, 255)
@@ -212,7 +230,7 @@ while running:
                 elif buttonlist[index][2] == green:
                     if starthover:
                         buttonlist[index][2] = blue
-                        startpoint = [(y-30)//w, (x-50)//w]
+                        startpoint = [(y-margintop)//w, (x)//w]
                         starthover = False
                         endhover = True
                         hover = (100, 255, 100)
@@ -222,9 +240,9 @@ while running:
                         endhover = True
                         hover = (100, 255, 100)
                 pygame.draw.rect(screen, buttonlist[index][2], (x, y, w, w))
-            elif 225<location[0]<285 and 460<location[1]<520 and already == 0:
+            elif 280<location[0]<340 and tablesize+gap<location[1]<tablesize+gap+60 and already == 0:
                 global results
-                spreadpattern,results = findpath(startpoint, endpoint, walls)
+                spreadpattern,results,text = findpath(startpoint, endpoint, walls)
                 already = 1
                 for k in spreadpattern:
                     if k != []:
@@ -236,7 +254,9 @@ while running:
                         pygame.time.wait(1)
                 for [i,j] in results:
                     buttonlist[j*size+i][2] = pink
-            elif 150<location[0]<210 and 460<location[1]<520 and already == 1:
+                appeartext = 1
+                drawbuttons()
+            elif 205<location[0]<265 and tablesize+gap<location[1]<tablesize+gap+60 and already == 1:
                 for k in spreadpattern:
                     for [i,j] in k:
                         if [i,j] != endpoint:
@@ -244,34 +264,30 @@ while running:
                 for [i,j] in results:
                     buttonlist[j*size+i][2] = grey
                 already = 0
+                appeartext = 0
                 drawbuttons()
-            elif 75<location[0]<135 and 460<location[1]<520:
+            elif 130<location[0]<190 and tablesize+gap<location[1]<tablesize+gap+60:
                 reset()
-            elif 300<location[0]<360 and 460<location[1]<520 and already == 0:
+            elif 355<location[0]<415 and tablesize+gap<location[1]<tablesize+gap+60 and already == 0:
                 if size == 10:
                     size = 20
                     reset()
-                    pygame.display.flip()
                 elif size == 20:
-                    size = 40
+                    size = 30
                     reset()
-                    pygame.display.flip()
-            elif 375<location[0]<435 and 460<location[1]<520 and already == 0:
-                if size == 40:
+            elif 430<location[0]<490 and tablesize+gap<location[1]<tablesize+gap+60 and already == 0:
+                if size == 30:
                     size = 20
                     reset()
-                    pygame.display.flip()
                 elif size == 20:
                     size = 10
                     reset()
-                    pygame.display.flip()
         pygame.display.flip()
     location = pygame.mouse.get_pos()
-    if (49<location[0]<450) and (29<location[1]<430) and already == 0:
-        x = ((location[0]-50)//w)*w + 50
-        y = ((location[1]-30)//w)*w + 30
+    if (marginleft-1<location[0]<tablesize+marginleft) and (margintop-1<location[1]<tablesize+margintop) and already == 0:
+        x = ((location[0]-marginleft)//w)*w + marginleft
+        y = ((location[1]-margintop)//w)*w + margintop
         pygame.draw.rect(screen, hover, (x, y, w, w))
     pygame.display.flip()
 
 pygame.quit()
-
