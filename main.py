@@ -1,5 +1,6 @@
 import pygame
 import heapq
+import random
 
 pygame.init()
 
@@ -75,6 +76,13 @@ def drawbuttons():
         pygame.draw.rect(screen, color, (x, y, w, w))
         pygame.draw.rect(screen, (60,60,60), (x, y, w, w),1)
     
+    pygame.draw.rect(screen,black,(510,10,100,40))
+    generatebutton = pygame.Rect(510,10,100,40)
+    generatetext = myfont.render("Generate",True,yellow)
+    generatetextrect = generatetext.get_rect(center = generatebutton.center)
+    screen.blit(generatetext,generatetextrect)
+    
+
     buttonrestart = pygame.Rect((205, tablesize+1.5*gap , 60, 60))
     restart = pygame.image.load('Python/FindPathVisualizer/restart.png')
     restart = pygame.transform.scale(restart, (60, 60))
@@ -116,7 +124,6 @@ def drawbuttons():
         render = myfont.render(text,True,black)
         textrect = render.get_rect(center = textbutton.center)
         screen.blit(render,textrect)
-    pygame.display.flip()
 
 def findpathdij(startpoint, endpoint, walls):
     spread = []
@@ -239,15 +246,53 @@ def findpathastar(startpoint, endpoint, walls):
     while node is not None:
         path.append(list(node))
         node = parents[node]
-    result_text = str(len(path) - 1) + "moves"
+    result_text = str(len(path) - 1) + " moves"
 
     return spread, path[1:-1], result_text
+
+def generate_maze(size, startpoint):
+    walls = set()
+    for y in range(size):
+        for x in range(size):
+            walls.add((y, x))
+    start_y, start_x = startpoint
+    start_node = (start_y, start_x)
+    if start_node in walls:
+        walls.remove(start_node)
+    stack = [start_node]
+    max_stack_size = 1
+    deepest_cell = start_node
+
+    while stack:
+        current_y, current_x = stack[-1]
+        neighbors = []
+        for dy, dx in [(-2, 0), (2, 0), (0, -2), (0, 2)]:
+            ny, nx = current_y + dy, current_x + dx
+            if 0 <= ny < size and 0 <= nx < size and (ny, nx) in walls:
+                neighbors.append((ny, nx))
+        if neighbors:
+            next_y, next_x = random.choice(neighbors)
+            next_node = (next_y, next_x)
+            wall_between_y = (current_y + next_y) // 2
+            wall_between_x = (current_x + next_x) // 2
+            if (wall_between_y, wall_between_x) in walls:
+                walls.remove((wall_between_y, wall_between_x))
+            if next_node in walls:
+                walls.remove(next_node)
+            stack.append(next_node)
+            if len(stack) > max_stack_size:
+                max_stack_size = len(stack)
+                deepest_cell = next_node
+        else:
+            stack.pop()
+    final_walls_list = [list(w) for w in walls]
+    return final_walls_list, list(deepest_cell)
 
 running = True
 while running:
     screen.fill(white)
     if tipsstatus == 0:
-        tipsbutton = pygame.Rect(250,10,100,40)
+        tipsbutton = pygame.Rect(225,10,100,40)
         tipstext = myfont.render("<-- Click to change the algorithm",True,grey)
         tipstextrect = tipstext.get_rect(center = tipsbutton.center)
         screen.blit(tipstext,tipstextrect)
@@ -372,6 +417,26 @@ while running:
                     selected = 'A*'
                 else:
                     selected = "Dijkstra"
+            elif 510 < location[0] < 610 and 10 < location[1] < 50 and already == 0:
+                generated_walls, newend = generate_maze(size, startpoint)
+                walls = generated_walls
+                endpoint = newend
+                for y in range(size):
+                    for x in range(size):
+                        index = x * size + y
+                        if buttonlist[index][2] == red:
+                            buttonlist[index][2] = black
+                        if [y, x] == startpoint:
+                            buttonlist[index][2] = blue
+                        elif [y, x] == endpoint:
+                            buttonlist[index][2] = red
+                        elif [y, x] in walls:
+                            buttonlist[index][2] = grey
+                        else:
+                            buttonlist[index][2] = black
+                    drawbuttons()
+                    pygame.display.flip()
+                    pygame.time.wait(1)
         elif event.type == pygame.MOUSEBUTTONUP:
             hold = 0
             holdvisit = []
@@ -393,6 +458,19 @@ while running:
                 drawbuttons()
         else:
             pygame.draw.rect(screen, hover, (x, y, w, w),5)
+    elif 130<location[0]<190 and tablesize+1.5*gap<location[1]<tablesize+1.5*gap+60:
+        pygame.draw.rect(screen,black,(130, tablesize+1.5*gap , 60, 60),3)
+    elif 355<location[0]<415 and tablesize+1.5*gap<location[1]<tablesize+1.5*gap+60:
+        pygame.draw.rect(screen,black,(355, tablesize+1.5*gap , 60, 60),3)
+    elif 430<location[0]<490 and tablesize+1.5*gap<location[1]<tablesize+1.5*gap+60:
+        pygame.draw.rect(screen,black,(430, tablesize+1.5*gap , 60, 60),3)
+    elif 205<location[0]<265 and tablesize+1.5*gap<location[1]<tablesize+1.5*gap+60:
+        pygame.draw.rect(screen,black,(205, tablesize+1.5*gap , 60, 60),3)
+    elif 280<location[0]<340 and tablesize+1.5*gap<location[1]<tablesize+1.5*gap+60:
+        pygame.draw.rect(screen,black,(280, tablesize+1.5*gap , 60, 60),3)
+    elif 510 < location[0] < 610 and 10 < location[1] < 50:
+        pygame.draw.rect(screen,red,(510, 10, 100, 40),3)
+    elif 10<location[0]<110 and 10<location[1]<50:
+        pygame.draw.rect(screen,black,(10, 10, 100, 40),3)
     pygame.display.flip()
-
 pygame.quit()
