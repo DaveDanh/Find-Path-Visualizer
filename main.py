@@ -22,7 +22,7 @@ pathcolor = (240, 240, 240)
 
 gap = 60
 marginleft = 10
-margintop = 60
+margintop = 65
 tablesize = widthscreen-20
 myfont = pygame.font.Font(None,30)
 size = 10
@@ -34,6 +34,8 @@ endhover = False
 w = tablesize // size
 hold = 0
 holdvisit = []
+hold1 = 0
+hold1visit = []
 seleclist = ['Dijkstra','A*']
 selected = 'Dijkstra'
 
@@ -53,7 +55,7 @@ def reset():
     global text,appeartext
     appeartext = 0
     text = ''
-    global buttonlist, walls, startpoint, endpoint, starthover, endhover, already, w, selected
+    global buttonlist, walls, startpoint, endpoint, starthover, endhover, already, w, selected,hover
     buttonlist = []
     w = tablesize // size
     for i in range(marginleft,tablesize,w):
@@ -66,6 +68,7 @@ def reset():
     endpoint = [size-1,size-1]
     starthover = False
     endhover = False
+    hover = white
     already = 0
     selected = 'Dijkstra'
     drawbuttons()
@@ -76,9 +79,9 @@ def drawbuttons():
         pygame.draw.rect(screen, color, (x, y, w, w))
         pygame.draw.rect(screen, (60,60,60), (x, y, w, w),1)
     
-    pygame.draw.rect(screen,black,(510,10,100,40))
+    pygame.draw.rect(screen,(80,80,80),(510,10,100,40))
     generatebutton = pygame.Rect(510,10,100,40)
-    generatetext = myfont.render("Generate",True,yellow)
+    generatetext = myfont.render("Generate",True,white)
     generatetextrect = generatetext.get_rect(center = generatebutton.center)
     screen.blit(generatetext,generatetextrect)
     
@@ -113,12 +116,12 @@ def drawbuttons():
     downrect = down.get_rect(center = buttondown.center)   
     screen.blit(down, downrect)
 
+    pygame.draw.rect(screen,(80,80,80),(10,10,100,40))
     selectedbutton = pygame.Rect(10,10,100,40)
-    selectedtext = myfont.render(selected,True,black)
+    selectedtext = myfont.render(selected,True,white)
     selectedtextrect = selectedtext.get_rect(center = selectedbutton.center)
     screen.blit(selectedtext,selectedtextrect)
-    pygame.draw.rect(screen,black,(10,10,100,40),1)
-
+    
     if appeartext == 1:
         textbutton = pygame.Rect(235,tablesize + 2.8*gap,150,40)
         render = myfont.render(text,True,black)
@@ -306,9 +309,11 @@ while running:
                 x = ((location[0]-marginleft)//w)*w + marginleft
                 y = ((location[1]-margintop)//w)*w + margintop
                 index = (y-margintop)//w + (x)//(w) * size
-                hold = 1
-                holdvisit.append(index)
+                
                 if buttonlist[index][2] == black:
+                    hold = 1
+                    holdvisit = walls.copy()
+                    holdvisit.append(index)
                     if starthover:
                         buttonlist[index][2] = blue
                         startpoint = [(y-margintop)//w, (x)//w]
@@ -323,6 +328,8 @@ while running:
                         buttonlist[index][2] = grey
                         walls.append([(y-margintop)//w,(x)//w])
                 elif buttonlist[index][2] == grey:
+                    hold1 = 1
+                    hold1visit.append(index)
                     if starthover:
                         buttonlist[index][2] = blue
                         startpoint = [(y-margintop)//w, (x)//w]
@@ -424,8 +431,6 @@ while running:
                 for y in range(size):
                     for x in range(size):
                         index = x * size + y
-                        if buttonlist[index][2] == red:
-                            buttonlist[index][2] = black
                         if [y, x] == startpoint:
                             buttonlist[index][2] = blue
                         elif [y, x] == endpoint:
@@ -440,21 +445,27 @@ while running:
         elif event.type == pygame.MOUSEBUTTONUP:
             hold = 0
             holdvisit = []
+            hold1 = 0
+            hold1visit = []
         pygame.display.flip()
     location = pygame.mouse.get_pos()
     if (marginleft-1<location[0]<tablesize+marginleft) and (margintop-1<location[1]<tablesize+margintop) and already == 0:
         x = ((location[0]-marginleft)//w)*w + marginleft
         y = ((location[1]-margintop)//w)*w + margintop
         index = (y-margintop)//w + (x)//(w) * size
-        if hold == 1 and index not in holdvisit:
+        if hold == 1 and index not in holdvisit and not starthover and not endhover:
             if index not in [startpoint[0]+startpoint[1]*size,endpoint[0]+endpoint[1]*size]:
                 if buttonlist[index][2] == black:
                     buttonlist[index][2] = grey
                     walls.append([(y-margintop)//w,(x)//w])
-                else:
+                holdvisit.append(index)
+                drawbuttons()
+        elif hold1 == 1 and index not in hold1visit and not starthover and not endhover:
+            if index not in [startpoint[0]+startpoint[1]*size,endpoint[0]+endpoint[1]*size]:
+                if buttonlist[index][2] == grey:
                     buttonlist[index][2] = black
                     walls.remove([(y-margintop)//w,(x)//w])
-                holdvisit.append(index)
+                hold1visit.append(index)
                 drawbuttons()
         else:
             pygame.draw.rect(screen, hover, (x, y, w, w),5)
@@ -469,8 +480,16 @@ while running:
     elif 280<location[0]<340 and tablesize+1.5*gap<location[1]<tablesize+1.5*gap+60:
         pygame.draw.rect(screen,black,(280, tablesize+1.5*gap , 60, 60),3)
     elif 510 < location[0] < 610 and 10 < location[1] < 50:
-        pygame.draw.rect(screen,red,(510, 10, 100, 40),3)
+        pygame.draw.rect(screen,(150,150,150),(510,10,100,40))
+        generatebutton = pygame.Rect(510,10,100,40)
+        generatetext = myfont.render("Generate",True,white)
+        generatetextrect = generatetext.get_rect(center = generatebutton.center)
+        screen.blit(generatetext,generatetextrect)
     elif 10<location[0]<110 and 10<location[1]<50:
-        pygame.draw.rect(screen,black,(10, 10, 100, 40),3)
+        pygame.draw.rect(screen,(150,150,150),(10,10,100,40))
+        selectedbutton = pygame.Rect(10,10,100,40)
+        selectedtext = myfont.render(selected,True,white)
+        selectedtextrect = selectedtext.get_rect(center = selectedbutton.center)
+        screen.blit(selectedtext,selectedtextrect)
     pygame.display.flip()
 pygame.quit()
